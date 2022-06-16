@@ -49,5 +49,5 @@ mul_mat_vec:
     vmov $v04, 3, $v22, w0
     vmov $v05, 3, $v23, w0
 
-    jr $ra
+    jr ra
     nop
