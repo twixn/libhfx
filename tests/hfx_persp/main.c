@@ -49,8 +49,8 @@ int main(void)
 
     state = hfx_init();
 
-    hfx_vertex_pointer(state, 3, HFX_FLOAT, 0, v1);
-    hfx_color_pointer(state, 4, HFX_UNSIGNED_BYTE, 0, vc1);
+    hfx_vertex_pointer(state, 3, HFX_FLOAT, 3*sizeof(float), v1);
+    hfx_color_pointer(state, 4, HFX_UNSIGNED_BYTE, 4*sizeof(char), vc1);  
     hfx_clear_color_f(state, 0.0f, 0.0f, 0.0f, 1.0f);
 
     float angle = 10.0f;

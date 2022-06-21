@@ -102,9 +102,9 @@ int main(void)
 
     hfx_tex_image_2d(state, 0, 0, HFX_RGBA, 16, 16, 0, HFX_RGBA, HFX_UNSIGNED_SHORT_5_5_5_1, tex_data);
 
-    hfx_vertex_pointer(state, 3, HFX_FLOAT, 0, v1);
-    hfx_color_pointer(state, 4, HFX_UNSIGNED_BYTE, 0, vc1);
-    hfx_tex_coord_pointer(state, 2, HFX_FLOAT, 0, t1);
+    hfx_vertex_pointer(state, 3, HFX_FLOAT, 3*sizeof(float), v1);
+    hfx_color_pointer(state, 4, HFX_UNSIGNED_BYTE, 4*sizeof(char), vc1);  
+    hfx_tex_coord_pointer(state, 2, HFX_FLOAT, 2*sizeof(float), t1);
     hfx_clear_color_f(state, 0.0f, 0.0f, 0.0f, 1.0f);
 
     //float angle = -30.0f;

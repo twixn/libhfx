@@ -30,20 +30,28 @@ void hfx_color_f(hfx_state *state, float r, float g, float b, float a)
 
 void hfx_vertex_pointer(hfx_state *state, uint32_t size, uint32_t type, uint32_t stride, void *data)
 {
-    state->vertex_pointer = (float*)data;
+    state->vertex_pointer = (uint8_t*)data;
     state->vertex_size = size;
+    state->vertex_stride = stride > 0 ? stride : size;
 }
 
 void hfx_color_pointer(hfx_state *state, uint32_t size, uint32_t type, uint32_t stride, void *data)
 {
     state->color_pointer = (uint8_t*)data;
     state->color_size = size;
+    state->color_stride = stride > 0 ? stride : size;
 }
 
 void hfx_tex_coord_pointer(hfx_state *state, uint32_t size, uint32_t type, uint32_t stride, void *data)
 {
-    state->tex_coord_pointer = (float*)data;
+    state->tex_coord_pointer = (uint8_t*)data;
     state->tex_coord_size = size;
+    state->tex_coord_stride = stride > 0 ? stride : size;
+}
+
+void hfx_index_pointer(hfx_state *state, uint32_t type, void *data)
+{
+    state->index_pointer = (short*)data;
 }
 
 void hfx_set_scissor(hfx_state *state, uint32_t xh, uint32_t yh, uint32_t xl, uint32_t yl)
@@ -168,52 +176,73 @@ void hfx_draw_arrays(hfx_state *state, uint32_t type, uint32_t start, uint32_t c
     float tex_width = cur_tex->width*4.0f - 1.0f;
     float tex_height= cur_tex->height*4.0f - 1.0f;
     uint32_t vs = state->vertex_size;
+    
+
+    float* vert_pointer = NULL;
+    uint8_t* col_pointer = NULL;
+    float* tex_coord_pointer = NULL;
 
     hfx_set_mode(state);
 
+    c1[0] = c1[1] = c1[2] = c1[3] = 255.0f;
+    c2[0] = c2[1] = c2[2] = c2[3] = 255.0f;
+    c3[0] = c3[1] = c3[2] = c3[3] = 255.0f;
+
     for(int i = start_tri; i < num_tri; i++)
     {
-        v1[0] = state->vertex_pointer[i*vs*state->vertex_size+0];
-        v1[1] = state->vertex_pointer[i*vs*state->vertex_size+1];
-        v1[2] = vs < 3 ? 0.0f : state->vertex_pointer[i*vs*state->vertex_size+2];
-        v1[3] = vs < 4 ? 1.0f : state->vertex_pointer[i*vs*state->vertex_size+3];
+        vert_pointer = (float*)&state->vertex_pointer[i*state->vertex_stride];
+        v1[0] = vert_pointer[0];
+        v1[1] = vert_pointer[1];
+        v1[2] = vs < 3 ? 0.0f : vert_pointer[2];
+        v1[3] = vs < 4 ? 1.0f : vert_pointer[3];
 
-        v2[0] = state->vertex_pointer[i*vs*state->vertex_size+vs+0];
-        v2[1] = state->vertex_pointer[i*vs*state->vertex_size+vs+1];
-        v2[2] = vs < 3 ? 0.0f : state->vertex_pointer[i*vs*state->vertex_size+vs+2];
-        v2[3] = vs < 4 ? 1.0f : state->vertex_pointer[i*vs*state->vertex_size+vs+3];
+        vert_pointer = (float*)&state->vertex_pointer[(i+1)*state->vertex_stride];
+        v2[0] = vert_pointer[0];
+        v2[1] = vert_pointer[1];
+        v2[2] = vs < 3 ? 0.0f : vert_pointer[2];
+        v2[3] = vs < 4 ? 1.0f : vert_pointer[3];
 
-        v3[0] = state->vertex_pointer[i*vs*state->vertex_size+vs*2+0];
-        v3[1] = state->vertex_pointer[i*vs*state->vertex_size+vs*2+1];
-        v3[2] = vs < 3 ? 0.0f : state->vertex_pointer[i*vs*state->vertex_size+vs*2+2];
-        v3[3] = vs < 4 ? 1.0f : state->vertex_pointer[i*vs*state->vertex_size+vs*2+3];
+        vert_pointer = (float*)&state->vertex_pointer[(i+2)*state->vertex_stride];
+        v3[0] = vert_pointer[0];
+        v3[1] = vert_pointer[1];
+        v3[2] = vs < 3 ? 0.0f : vert_pointer[2];
+        v3[3] = vs < 4 ? 1.0f : vert_pointer[3];
 
-        c1[0] = (float)state->color_pointer[i*3*state->color_size+0];
-        c1[1] = (float)state->color_pointer[i*3*state->color_size+1];
-        c1[2] = (float)state->color_pointer[i*3*state->color_size+2];
-        c1[3] = (float)state->color_pointer[i*3*state->color_size+3];
+        if(state->caps.color_array)
+        {
+            col_pointer = &state->color_pointer[i*state->color_stride];
+            c1[0] = (float)col_pointer[0];
+            c1[1] = (float)col_pointer[1];
+            c1[2] = (float)col_pointer[2];
+            c1[3] = (float)col_pointer[3];
 
-        c2[0] = (float)state->color_pointer[i*3*state->color_size+4];
-        c2[1] = (float)state->color_pointer[i*3*state->color_size+5];
-        c2[2] = (float)state->color_pointer[i*3*state->color_size+6];
-        c2[3] = (float)state->color_pointer[i*3*state->color_size+7];
+            col_pointer = &state->color_pointer[(i+1)*state->color_stride];
+            c2[0] = (float)col_pointer[0];
+            c2[1] = (float)col_pointer[1];
+            c2[2] = (float)col_pointer[2];
+            c2[3] = (float)col_pointer[3];
 
-        c3[0] = (float)state->color_pointer[i*3*state->color_size+8];
-        c3[1] = (float)state->color_pointer[i*3*state->color_size+9];
-        c3[2] = (float)state->color_pointer[i*3*state->color_size+10];
-        c3[3] = (float)state->color_pointer[i*3*state->color_size+11];
+            col_pointer = &state->color_pointer[(i+2)*state->color_stride];
+            c3[0] = (float)col_pointer[0];
+            c3[1] = (float)col_pointer[1];
+            c3[2] = (float)col_pointer[2];
+            c3[3] = (float)col_pointer[3];
+        } 
 
         if(state->caps.texture_2d)
         {
             printf("TEXTURE WIDTH %f %f\n", tex_width, tex_height);
-            t1[0] = state->tex_coord_pointer[i*3*state->tex_coord_size+0]*tex_height;
-            t1[1] = state->tex_coord_pointer[i*3*state->tex_coord_size+1]*tex_width;
+            tex_coord_pointer = (float*)&state->tex_coord_pointer[(i)*state->tex_coord_stride];
+            t1[0] = tex_coord_pointer[0]*tex_height;
+            t1[1] = tex_coord_pointer[1]*tex_width;
 
-            t2[0] = state->tex_coord_pointer[i*3*state->tex_coord_size+2]*tex_width;
-            t2[1] = state->tex_coord_pointer[i*3*state->tex_coord_size+3]*tex_height;
+            tex_coord_pointer = (float*)&state->tex_coord_pointer[(i+1)*state->tex_coord_stride];
+            t2[0] = tex_coord_pointer[0]*tex_width;
+            t2[1] = tex_coord_pointer[1]*tex_height;
 
-            t3[0] = state->tex_coord_pointer[i*3*state->tex_coord_size+4]*tex_width;
-            t3[1] = state->tex_coord_pointer[i*3*state->tex_coord_size+5]*tex_height;
+            tex_coord_pointer = (float*)&state->tex_coord_pointer[(i+2)*state->tex_coord_stride];
+            t3[0] = tex_coord_pointer[0]*tex_width;
+            t3[1] = tex_coord_pointer[1]*tex_height;
         }
 
         hfx_draw_tri_f(state, v1, v2, v3, c1, c2, c3, t1, t2, t3);

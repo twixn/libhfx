@@ -92,10 +92,10 @@ hfx_state *hfx_init()
     data_ptr[HFX_REG_RB_SIZE/4] = HFX_RB_SIZE;
     data_cache_hit_writeback_invalidate(data_ptr, data_size);
     
-    load_data((void*)&_hfx_ucode_data_start, data_size);
-    load_ucode((void*)&_hfx_ucode_start, ucode_size);
+    rsp_load_data((void*)&_hfx_ucode_data_start, data_size,0);
+    rsp_load_code((void*)&_hfx_ucode_start, ucode_size,0);
     
-    run_ucode();
+    rsp_run_async();
 
 
     hfx_cmd_register_display(&state);

@@ -60,14 +60,19 @@ struct hfx_state {
 
     float model_matrix[16];
 
-    float *vertex_pointer;
+    uint8_t *vertex_pointer;
     uint32_t vertex_size;
+    uint32_t vertex_stride;
 
     uint8_t *color_pointer;
     uint32_t color_size;
+    uint32_t color_stride;
 
-    float *tex_coord_pointer;
+    uint8_t *tex_coord_pointer;
     uint32_t tex_coord_size;
+    uint32_t tex_coord_stride;
+
+    short *index_pointer;
 
     struct
     {
