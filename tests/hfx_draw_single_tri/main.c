@@ -47,7 +47,7 @@ int main(void)
     //hfx_rotate_f(state, 50, 0, 0, 1);
     hfx_translate_f(state, 50.0f, 50.0f, 0.0f);
 
-    hfx_draw_arrays(state, HFX_TRIANGLES, 0, 3);
+    hfx_draw_arrays(state, HFX_TRIANGLES, 0, 1);
 
     hfx_clear_color_f(state, 0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -70,7 +70,7 @@ int main(void)
         //hfx_translate_f(state, 100.0f, 100.0f, 0.0f);
         hfx_rotate_f(state, angle, 0, 0, 1);
 
-        hfx_draw_arrays(state, HFX_TRIANGLES, 0, 3);
+        hfx_draw_arrays(state, HFX_TRIANGLES, 0, 1);
 
         hfx_wait_for_idle(state);
 

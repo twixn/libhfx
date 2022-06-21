@@ -49,11 +49,6 @@ void hfx_tex_coord_pointer(hfx_state *state, uint32_t size, uint32_t type, uint3
     state->tex_coord_stride = stride > 0 ? stride : size;
 }
 
-void hfx_index_pointer(hfx_state *state, uint32_t type, void *data)
-{
-    state->index_pointer = (short*)data;
-}
-
 void hfx_set_scissor(hfx_state *state, uint32_t xh, uint32_t yh, uint32_t xl, uint32_t yl)
 {
     uint64_t cmds[1];
@@ -169,15 +164,20 @@ void hfx_set_mode(hfx_state *state)
 
 void hfx_draw_arrays(hfx_state *state, uint32_t type, uint32_t start, uint32_t count)
 {
-    uint32_t num_tri = count / 3;
-    uint32_t start_tri = start / 3;
+    hfx_draw_arrays_indexed(state, NULL, type, start, count);
+}
+
+
+void hfx_draw_arrays_indexed(hfx_state *state, uint16_t* indexes, uint32_t type, uint32_t start, uint32_t count)
+{
+    uint32_t num_tri = count;// / 3;
+    uint32_t start_tri = start;// / 3;
     hfx_tex_info *cur_tex = &state->tex_info.tex_list[state->tex_info.current_tex];
     float v1[4], v2[4], v3[4], c1[4], c2[4], c3[4], t1[2]={0}, t2[2]={0}, t3[2]={0};
     float tex_width = cur_tex->width*4.0f - 1.0f;
     float tex_height= cur_tex->height*4.0f - 1.0f;
     uint32_t vs = state->vertex_size;
     
-
     float* vert_pointer = NULL;
     uint8_t* col_pointer = NULL;
     float* tex_coord_pointer = NULL;
@@ -188,21 +188,32 @@ void hfx_draw_arrays(hfx_state *state, uint32_t type, uint32_t start, uint32_t c
     c2[0] = c2[1] = c2[2] = c2[3] = 255.0f;
     c3[0] = c3[1] = c3[2] = c3[3] = 255.0f;
 
-    for(int i = start_tri; i < num_tri; i++)
+    for(int t = start_tri; t < num_tri; t++)
     {
-        vert_pointer = (float*)&state->vertex_pointer[i*state->vertex_stride];
+        int i1 = t*3;
+        int i2 = i1+1;
+        int i3 = i2+1;
+
+        if(indexes)
+        {
+            i1 = indexes[i1];
+            i2 = indexes[i2];
+            i3 = indexes[i3];
+        }
+
+        vert_pointer = (float*)(&state->vertex_pointer[i1*state->vertex_stride]);
         v1[0] = vert_pointer[0];
         v1[1] = vert_pointer[1];
         v1[2] = vs < 3 ? 0.0f : vert_pointer[2];
         v1[3] = vs < 4 ? 1.0f : vert_pointer[3];
 
-        vert_pointer = (float*)&state->vertex_pointer[(i+1)*state->vertex_stride];
+        vert_pointer = (float*)(&state->vertex_pointer[i2*state->vertex_stride]);
         v2[0] = vert_pointer[0];
         v2[1] = vert_pointer[1];
         v2[2] = vs < 3 ? 0.0f : vert_pointer[2];
         v2[3] = vs < 4 ? 1.0f : vert_pointer[3];
 
-        vert_pointer = (float*)&state->vertex_pointer[(i+2)*state->vertex_stride];
+        vert_pointer = (float*)(&state->vertex_pointer[i3*state->vertex_stride]);
         v3[0] = vert_pointer[0];
         v3[1] = vert_pointer[1];
         v3[2] = vs < 3 ? 0.0f : vert_pointer[2];
@@ -210,19 +221,19 @@ void hfx_draw_arrays(hfx_state *state, uint32_t type, uint32_t start, uint32_t c
 
         if(state->caps.color_array)
         {
-            col_pointer = &state->color_pointer[i*state->color_stride];
+            col_pointer = &state->color_pointer[i1*state->color_stride];
             c1[0] = (float)col_pointer[0];
             c1[1] = (float)col_pointer[1];
             c1[2] = (float)col_pointer[2];
             c1[3] = (float)col_pointer[3];
 
-            col_pointer = &state->color_pointer[(i+1)*state->color_stride];
+            col_pointer = &state->color_pointer[i2*state->color_stride];
             c2[0] = (float)col_pointer[0];
             c2[1] = (float)col_pointer[1];
             c2[2] = (float)col_pointer[2];
             c2[3] = (float)col_pointer[3];
 
-            col_pointer = &state->color_pointer[(i+2)*state->color_stride];
+            col_pointer = &state->color_pointer[i3*state->color_stride];
             c3[0] = (float)col_pointer[0];
             c3[1] = (float)col_pointer[1];
             c3[2] = (float)col_pointer[2];
@@ -231,16 +242,16 @@ void hfx_draw_arrays(hfx_state *state, uint32_t type, uint32_t start, uint32_t c
 
         if(state->caps.texture_2d)
         {
-            printf("TEXTURE WIDTH %f %f\n", tex_width, tex_height);
-            tex_coord_pointer = (float*)&state->tex_coord_pointer[(i)*state->tex_coord_stride];
+            //printf("TEXTURE WIDTH %f %f\n", tex_width, tex_height);
+            tex_coord_pointer = (float*)(&state->tex_coord_pointer[i1*state->tex_coord_stride]);
             t1[0] = tex_coord_pointer[0]*tex_height;
             t1[1] = tex_coord_pointer[1]*tex_width;
 
-            tex_coord_pointer = (float*)&state->tex_coord_pointer[(i+1)*state->tex_coord_stride];
+            tex_coord_pointer = (float*)(&state->tex_coord_pointer[i2*state->tex_coord_stride]);
             t2[0] = tex_coord_pointer[0]*tex_width;
             t2[1] = tex_coord_pointer[1]*tex_height;
 
-            tex_coord_pointer = (float*)&state->tex_coord_pointer[(i+2)*state->tex_coord_stride];
+            tex_coord_pointer = (float*)(&state->tex_coord_pointer[i3*state->tex_coord_stride]);
             t3[0] = tex_coord_pointer[0]*tex_width;
             t3[1] = tex_coord_pointer[1]*tex_height;
         }
@@ -399,6 +410,9 @@ void hfx_draw_tri_f(hfx_state *state, float *v1, float *v2, float *v3, float *vc
 
     index = 2;
 
+    #define DEPTH_CALC(x) (1-(x)*(-1.0f/2.0f));
+    //#define DEPTH_CALC(x) ((1-x));
+
     if(num_tri > 0)
     {
         float w_depth;
@@ -407,7 +421,7 @@ void hfx_draw_tri_f(hfx_state *state, float *v1, float *v2, float *v3, float *vc
         output_verts[0].pos[1] = ((output_verts[0].pos[1]/
                                    output_verts[0].pos[3])-1)*(-240.0f/2.0f);
         w_depth = output_verts[0].pos[2]/output_verts[0].pos[3];
-        output_verts[0].pos[2] = (w_depth-1)*(-1.0f/2.0f);
+        output_verts[0].pos[2] = DEPTH_CALC(w_depth);//(w_depth-1)*(-1.0f/2.0f);
 
         output_verts[0].tex[0] /= output_verts[0].pos[3];
         output_verts[0].tex[1] /= output_verts[0].pos[3];
@@ -417,7 +431,7 @@ void hfx_draw_tri_f(hfx_state *state, float *v1, float *v2, float *v3, float *vc
         output_verts[index-1].pos[1] = ((output_verts[index-1].pos[1]/
                                          output_verts[index-1].pos[3])-1)*(-240.0f/2.0f);
         w_depth = output_verts[index-1].pos[2]/output_verts[index-1].pos[3];
-        output_verts[index-1].pos[2] = (w_depth-1)*(-1.0f/2.0f);
+        output_verts[index-1].pos[2] = DEPTH_CALC(w_depth);//(w_depth-1)*(-1.0f/2.0f);
 
         output_verts[index-1].tex[0] /= output_verts[index-1].pos[3];
         output_verts[index-1].tex[1] /= output_verts[index-1].pos[3];
@@ -429,7 +443,7 @@ void hfx_draw_tri_f(hfx_state *state, float *v1, float *v2, float *v3, float *vc
             output_verts[index].pos[1] = ((output_verts[index].pos[1]/
                                            output_verts[index].pos[3])-1)*(-240.0f/2.0f);
             w_depth = output_verts[index].pos[2]/output_verts[index].pos[3];
-            output_verts[index].pos[2] = (w_depth-1)*(-1.0f/2.0f);
+            output_verts[index].pos[2] = DEPTH_CALC(w_depth);//(w_depth-1)*(-1.0f/2.0f);
             output_verts[index].tex[0] /= output_verts[index].pos[3];
             output_verts[index].tex[1] /= output_verts[index].pos[3];
 

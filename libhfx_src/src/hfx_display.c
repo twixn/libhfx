@@ -10,7 +10,7 @@
 #define DISPLAY_TIMEOUT (1*1000*1000)
 #define get_disp_buffer(x) __safe_buffer[(x)-1]
 
-uint16_t hfx_depth_buffer[320*240] __attribute__((aligned(64)));
+uint16_t hfx_depth_buffer[320*240*2] __attribute__((aligned(64)));
 
 uint16_t *depth_buffer;
 

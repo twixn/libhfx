@@ -65,7 +65,7 @@ int main(void)
 
         hfx_rotate_f(state, angle, 0.0f, 1.0f, 0.0f);
 
-        hfx_draw_arrays(state, HFX_TRIANGLES, 0, 6);
+        hfx_draw_arrays(state, HFX_TRIANGLES, 0, 2);
 
         hfx_swap_buffers(state);
     }

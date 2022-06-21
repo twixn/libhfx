@@ -51,6 +51,8 @@ uint8_t vc1[] =
     255.0f, 0.0f, 0.0f, 255.0f,
 };
 
+uint16_t i1[] = {0,1,2,3,4,5};
+
 static uint16_t tex_data[16*16] __attribute__((aligned(64)));
 
 void load_tex_dat()
@@ -103,7 +105,7 @@ int main(void)
     hfx_tex_image_2d(state, 0, 0, HFX_RGBA, 16, 16, 0, HFX_RGBA, HFX_UNSIGNED_SHORT_5_5_5_1, tex_data);
 
     hfx_vertex_pointer(state, 3, HFX_FLOAT, 3*sizeof(float), v1);
-    hfx_color_pointer(state, 4, HFX_UNSIGNED_BYTE, 4*sizeof(char), vc1);  
+    hfx_color_pointer(state, 4, HFX_UNSIGNED_BYTE, 4*sizeof(uint8_t), vc1);  
     hfx_tex_coord_pointer(state, 2, HFX_FLOAT, 2*sizeof(float), t1);
     hfx_clear_color_f(state, 0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -119,7 +121,7 @@ int main(void)
 
         hfx_rotate_f(state, angle, 0.0f, 1.0f, 0.0f);
 
-        hfx_draw_arrays(state, HFX_TRIANGLES, 0, 6);
+        hfx_draw_arrays_indexed(state, i1, HFX_TRIANGLES, 0, 2);
 
         hfx_swap_buffers(state);
     }

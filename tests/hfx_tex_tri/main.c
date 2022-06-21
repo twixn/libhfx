@@ -122,7 +122,7 @@ int main(void)
         hfx_clear(state, HFX_COLOR_BUFFER_BIT|HFX_DEPTH_BUFFER_BIT);
         hfx_load_identity(state);
         hfx_rotate_f(state, angle, 0, 0, 1);
-        hfx_draw_arrays(state, HFX_TRIANGLES, 0, 6);
+        hfx_draw_arrays(state, HFX_TRIANGLES, 0, 2);
 
         hfx_swap_buffers(state);
     }

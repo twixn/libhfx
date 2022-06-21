@@ -56,6 +56,10 @@ test_dict = {
         'src' : ['main.c'],
         'ucode_src' : [],
     },
+    'hfx_lookat' : {
+        'src' : ['main.c'],
+        'ucode_src' : [],
+    },
     'ucode_tri' : {
         'src' : ['main.c'],
         'ucode_src' : ['ucode.c', 'ucode_asm.S'],

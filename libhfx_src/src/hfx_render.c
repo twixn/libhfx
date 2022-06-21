@@ -81,12 +81,12 @@ void barycentric(float px, float py, float x1, float y1, float x2, float y2, flo
 
 uint32_t hfx_float_to_fixed(float a)
 {
-    if(a > 32767)
+    if(a > 32767.0f)
         return (32767<<16);
-    else if(a < -32768)
+    else if(a < -32768.0f)
         return (-32768<<16);
     else
-        return a * 65536.0;
+        return (a * 65536.0f);
 }
 
 uint32_t tri_draw_mode(hfx_state *state)

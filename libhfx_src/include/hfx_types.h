@@ -72,8 +72,6 @@ struct hfx_state {
     uint32_t tex_coord_size;
     uint32_t tex_coord_stride;
 
-    short *index_pointer;
-
     struct
     {
         uint32_t width;

@@ -56,6 +56,7 @@ void hfx_rotate_f(hfx_state *state, float angle, float x, float y, float z);
 void hfx_scale_f(hfx_state *state, float sx, float sy, float sz);
 void hfx_ortho_f(hfx_state *state, float left, float right, float top, float bottom, float near, float far);
 void hfx_persp_f(hfx_state *state, float fovy, float aspect, float znear, float zfar);
+void hfx_lookat_f(hfx_state *state, float eye_x, float eye_y, float eye_z, float at_x, float at_y, float at_z, float up_x, float up_y, float up_z);
 void hfx_mult_matrix_f(hfx_state *state, float *mat);
 
 void hfx_vertex_pointer(hfx_state *state, uint32_t size, uint32_t type, uint32_t stride, void *data);
@@ -63,6 +64,7 @@ void hfx_color_pointer(hfx_state *state, uint32_t size, uint32_t type, uint32_t 
 void hfx_tex_coord_pointer(hfx_state *state, uint32_t size, uint32_t type, uint32_t stride, void *data);
 void hfx_index_pointer(hfx_state *state, uint32_t type, void *data);
 void hfx_draw_arrays(hfx_state *state, uint32_t type, uint32_t start, uint32_t count);
+void hfx_draw_arrays_indexed(hfx_state *state, uint16_t* indexes, uint32_t type, uint32_t start, uint32_t count);
 
 void hfx_gen_textures(hfx_state *state, uint32_t n, uint32_t *textures);
 void hfx_tex_image_2d(hfx_state *state, uint32_t target, int32_t level, int32_t internalformat, uint32_t width, uint32_t height, int32_t border, uint32_t format, uint32_t type, const void *data);
