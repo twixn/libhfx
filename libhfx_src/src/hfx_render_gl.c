@@ -170,7 +170,7 @@ void hfx_draw_arrays(hfx_state *state, uint32_t type, uint32_t start, uint32_t c
 
 void hfx_draw_arrays_indexed(hfx_state *state, uint16_t* indexes, uint32_t type, uint32_t start, uint32_t count)
 {
-    uint32_t num_tri = count;// / 3;
+    uint32_t num_tri = start + count;// / 3;
     uint32_t start_tri = start;// / 3;
     hfx_tex_info *cur_tex = &state->tex_info.tex_list[state->tex_info.current_tex];
     float v1[4], v2[4], v3[4], c1[4], c2[4], c3[4], t1[2]={0}, t2[2]={0}, t3[2]={0};
@@ -361,10 +361,12 @@ void hfx_draw_tri_f(hfx_state *state, float *v1, float *v2, float *v3, float *vc
     verts[1] = hfx_make_vert(v2_t, vc2, vt2);
     verts[2] = hfx_make_vert(v3_t, vc3, vt3);
 
+    float clip_plane = 0;
     for(int i=0; i < 3; i++)
     {
         float *cur_vert = &verts[i].pos[0];
-        good[i] = (cur_vert[2] >= -cur_vert[3]) && (cur_vert[2] <= cur_vert[3]);
+        //good[i] = (cur_vert[2] >= -cur_vert[3]) && (cur_vert[2] <= cur_vert[3]);
+        good[i] = (cur_vert[2] >= clip_plane);
     }
 
     int prev_index = 2;
@@ -379,18 +381,22 @@ void hfx_draw_tri_f(hfx_state *state, float *v1, float *v2, float *v3, float *vc
         {
             if(good[prev_index])
             {
-                float t1 = (prev_vert->pos[3] - prev_vert->pos[2]) / 
-                           ((prev_vert->pos[3] - prev_vert->pos[2]) - 
-                           (cur_vert->pos[3] - cur_vert->pos[2]));
+                //float t1 = (prev_vert->pos[3] - prev_vert->pos[2]) / 
+                //           ((prev_vert->pos[3] - prev_vert->pos[2]) - 
+                //           (cur_vert->pos[3] - cur_vert->pos[2]));
+                float t1 = (prev_vert->pos[2] - clip_plane) / 
+                           (prev_vert->pos[2] - cur_vert->pos[2]);
                 /* Add t1 interpolated vert */
                 output_verts[index++] = hfx_lerp_vert(prev_vert, cur_vert, t1);
             }
 
             if(good[prev2_index])
             {
-                float t2 = (prev2_vert->pos[3] - prev2_vert->pos[2]) / 
-                           ((prev2_vert->pos[3] - prev2_vert->pos[2]) - 
-                           (cur_vert->pos[3] - cur_vert->pos[2]));
+                //float t2 = (prev2_vert->pos[3] - prev2_vert->pos[2]) / 
+                //           ((prev2_vert->pos[3] - prev2_vert->pos[2]) - 
+                //           (cur_vert->pos[3] - cur_vert->pos[2]));
+                float t2 = (prev2_vert->pos[2] - clip_plane) / 
+                           (prev2_vert->pos[2] - cur_vert->pos[2]);
                 /* Add t2 interpolated vert */
                 output_verts[index++] = hfx_lerp_vert(prev2_vert, cur_vert, t2);
             }
@@ -410,8 +416,10 @@ void hfx_draw_tri_f(hfx_state *state, float *v1, float *v2, float *v3, float *vc
 
     index = 2;
 
-    #define DEPTH_CALC(x) (1-(x)*(-1.0f/2.0f));
-    //#define DEPTH_CALC(x) ((1-x));
+    //#define DEPTH_CALC(x) (1-(x)*(-1.0f/2.0f));
+    //#define DEPTH_CALC(x) ((x-1)*(-1.0f/2.0f));
+    #define DEPTH_CALC(x) ((2-x));
+    //#define DEPTH_CALC(x) ((x));
 
     if(num_tri > 0)
     {
@@ -446,6 +454,7 @@ void hfx_draw_tri_f(hfx_state *state, float *v1, float *v2, float *v3, float *vc
             output_verts[index].pos[2] = DEPTH_CALC(w_depth);//(w_depth-1)*(-1.0f/2.0f);
             output_verts[index].tex[0] /= output_verts[index].pos[3];
             output_verts[index].tex[1] /= output_verts[index].pos[3];
+
 
             hfx_render_tri_f(state, output_verts[0].pos, output_verts[index-1].pos, output_verts[index].pos, 
                                     output_verts[0].col, output_verts[index-1].col, output_verts[index].col, 

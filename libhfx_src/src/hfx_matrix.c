@@ -204,9 +204,9 @@ void hfx_persp_f(hfx_state *state, float fovy, float aspect, float znear, float 
 
     result[0] = 1.0f / (aspect * tan_half_fov);
     result[5] = 1.0f / tan_half_fov;
-    result[10] = (zfar + znear) / (zfar - znear);
+    result[10] = (zfar + znear) / (znear - zfar);
     result[11] = -1.0f;
-    result[14] = (2.0f * zfar * znear) / (zfar - znear);
+    result[14] = (2.0f * zfar * znear) / (znear - zfar);
 
     hfx_matrix_multiply(state, state->model_matrix, result, state->model_matrix);
 }
@@ -222,7 +222,7 @@ void hfx_lookat_f(hfx_state *state, float eye_x, float eye_y, float eye_z, float
     float xaxis[4];
     float yaxis[4];
     float zaxis[4];
-    float cross[4];
+    float side[4];
 
     //dir[0] = at_x - eye_x;
     //dir[1] = at_y - eye_y;
@@ -239,8 +239,8 @@ void hfx_lookat_f(hfx_state *state, float eye_x, float eye_y, float eye_z, float
     eye[2] = eye_z;
 
     hfx_normalize3(state, dir, zaxis);
-    hfx_cross3(up, zaxis, cross);
-    hfx_normalize3(state, cross, xaxis);
+    hfx_cross3(up, zaxis, side);
+    hfx_normalize3(state, side, xaxis);
     hfx_cross3(zaxis, xaxis, yaxis);
     
     result[0] = xaxis[0];
